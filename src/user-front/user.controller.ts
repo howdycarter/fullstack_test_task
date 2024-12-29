@@ -23,9 +23,19 @@ export class UserController {
     return this.userService.getAllUser();
   }
 
-  @Get('get-one/:id')
+  @Get('get-by-name')
+  GetByText(@Req() req: {name: string}) {
+    return this.userService.findByName(req);
+  }
+
+  @Get(':id')
   getOneUser(@Param('id') id: string) {
     return this.userService.getOneUser(+id);
+  }
+
+  @Get('get-by-email')
+  getByEmail(@Req() req: {email: string}) {
+    return this.userService.findByEmail(req);
   }
 
   @Post('add')
@@ -39,10 +49,6 @@ export class UserController {
     @Body() userUpdateDto: UserUpdateDto,
     ) {
     return this.userService.editUser(+id, userUpdateDto);
-  }
-  @Get('get-by-name')
-  GetByText(@Req() req: {name: string}) {
-    return this.userService.findByName(req);
   }
   @Delete('edit-one/:id')
   deleteOneUser(@Param('id') id: string) {

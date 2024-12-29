@@ -1,8 +1,11 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { writeFile, readFile, readFileSync } from 'fs';
 import { UserUpdateDto } from './dto/user-update.dto';
+import { MailService } from 'src/mail/mail.service';
 @Injectable()
 export class UserService {
+  constructor(private readonly mailService: MailService) {}
+
   async getAllUser() {
     const data = readFileSync('./data.json', 'binary');
     return JSON.parse(data) 
@@ -23,6 +26,21 @@ export class UserService {
 
     return user
 
+  }
+
+  async findByEmail(req: any) {
+
+    const data = readFileSync('./data.json', 'binary');
+    const userList = await JSON.parse(data)
+
+    return userList.filter(u => {
+
+      let position = u.email.search(req.query.email);
+
+      if ((position === 0) === true){
+        return u
+      }
+    })
   }
   async getOneUser(id: number) {
     try {
@@ -125,6 +143,19 @@ export class UserService {
           }
         }
       )
+    } catch (err) {
+      throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async sendUserMail(userId: number) {
+    try {
+      const data = readFileSync('./data.json', 'binary');
+      const userList = await JSON.parse(data) 
+      const user = userList.find(u => u.id === userId)
+      if (user) {
+        await this.mailService.sendMail(user.email, 'Test', 'Test');
+      }
     } catch (err) {
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
